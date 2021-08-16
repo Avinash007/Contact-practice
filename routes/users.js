@@ -1,10 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const User = require("../models/User");
 const { check, validationResult } = require("express-validator");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const config = require("config");
+
+const User = require("../models/User");
 
 //@route    POST api/users
 //@desc     Register a user
@@ -29,6 +30,7 @@ router.post(
     const { name, email, password } = req.body;
 
     try {
+      // Search for a user in the DB
       let user = await User.findOne({ email });
 
       if (user) {
@@ -47,11 +49,14 @@ router.post(
 
       await user.save(); // Save to the DB
 
+      // Once user is verified, create a payload
       const payload = {
         user: {
           id: user.id,
         },
       };
+
+      // Keep this user logged in
       jwt.sign(
         payload,
         config.get("jwtSecret"),
